@@ -1,13 +1,15 @@
 // Worker process of the practice app: drains the job queue and writes results.
 // A process_order job reads its order, adds tax, inserts a results row and
 // marks the job done, all in one transaction. Any error sends the job back for
-// a retry (or to the dead-letter state). Run as `node src/worker.ts <episode-dir> [id]`.
+// a retry (or to the dead-letter state). Settings come from config.json at start.
+// Run as `node src/worker.ts <episode-dir> [id]`.
 
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { errorMessage, openDb, tx } from "./db.ts";
 import { claim, complete, fail, type Job } from "./queue.ts";
 import { TAX_RATE } from "./seed.ts";
+import { readConfig } from "./config.ts";
 
 const dir = process.argv[2];
 if (!dir) {
@@ -16,7 +18,11 @@ if (!dir) {
 }
 
 const workerId = process.argv[3] ?? `worker-${process.pid}`;
-const db = openDb(join(dir, "app.db"));
+const config = readConfig(dir);
+if (!Number.isInteger(config.worker_batch_size) || config.worker_batch_size < 1) {
+  throw new Error(`invalid worker_batch_size ${config.worker_batch_size} in config.json`);
+}
+const db = openDb(join(dir, "app.db"), { busyTimeoutMs: config.busy_timeout_ms });
 const getOrder = db.prepare("SELECT id, amount_cents FROM orders WHERE id = ?");
 const addResult = db.prepare(
   "INSERT INTO results (order_id, job_id, total_cents) VALUES (?, ?, ?)",
@@ -39,24 +45,27 @@ function handle(job: Job): void {
   });
 }
 
-log("started");
-for (;;) {
+function runOne(): boolean {
   let job: Job | undefined;
   try {
     job = claim(db, workerId);
   } catch (err) {
     log(`claim failed: ${errorMessage(err)}`);
-    await sleep(200);
-    continue;
+    return false;
   }
-  if (!job) {
-    await sleep(50);
-    continue;
-  }
+  if (!job) return false;
   try {
     handle(job);
   } catch (err) {
     const status = fail(db, job.id, errorMessage(err));
     log(`job ${job.id} failed, now ${status}: ${errorMessage(err)}`);
   }
+  return true;
+}
+
+log(`started (batch ${config.worker_batch_size}, busy_timeout ${config.busy_timeout_ms} ms)`);
+for (;;) {
+  let worked = 0;
+  for (let i = 0; i < config.worker_batch_size; i++) worked += runOne() ? 1 : 0;
+  if (worked === 0) await sleep(config.worker_poll_ms);
 }

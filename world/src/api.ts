@@ -8,6 +8,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { existsSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { errorMessage, openDb, tx } from "./db.ts";
+import { readConfig } from "./config.ts";
 import { enqueue, stats } from "./queue.ts";
 
 const dir = process.argv[2];
@@ -17,7 +18,7 @@ if (!dir) {
 }
 
 const dbFile = join(dir, "app.db");
-const db = openDb(dbFile);
+const db = openDb(dbFile, { busyTimeoutMs: readConfig(dir).busy_timeout_ms });
 const insertOrder = db.prepare(
   "INSERT INTO orders (customer, amount_cents) VALUES (?, ?) RETURNING id",
 );

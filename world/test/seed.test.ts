@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { openDb, type Db } from "../src/db.ts";
+import { initSchema, openDb, type Db } from "../src/db.ts";
 import { checksum, seed } from "../src/seed.ts";
 
 const ROWS = 500;
@@ -16,6 +16,7 @@ const ROWS = 500;
 function seeded(seedValue: number, fn: (db: Db) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "rlh-seed-"));
   const db = openDb(join(dir, "app.db"));
+  initSchema(db);
   try {
     seed(db, ROWS, seedValue);
     fn(db);

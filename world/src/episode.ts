@@ -5,7 +5,8 @@
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { openDb } from "./db.ts";
+import { initSchema, openDb } from "./db.ts";
+import { DEFAULT_CONFIG, writeConfig } from "./config.ts";
 import { checksum, seed } from "./seed.ts";
 import { fileExists, isAlive, killTree, startProcess, waitFor } from "./proc.ts";
 
@@ -28,10 +29,12 @@ export function createEpisode(dir: string, options: CreateOptions = {}): string 
   mkdirSync(join(dir, "logs"), { recursive: true });
   mkdirSync(secretDir(dir), { recursive: true });
   const db = openDb(join(dir, "app.db"));
+  initSchema(db);
   seed(db, rows, seedValue);
   const sum = checksum(db, rows);
   db.close();
   const meta = { rows, seed: seedValue, created_at: new Date().toISOString() };
+  writeConfig(dir, DEFAULT_CONFIG);
   writeFileSync(join(dir, "episode.json"), JSON.stringify(meta, null, 2));
   writeFileSync(join(secretDir(dir), "checksum.json"), JSON.stringify({ ...meta, checksum: sum }));
   return sum;

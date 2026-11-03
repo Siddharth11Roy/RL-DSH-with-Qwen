@@ -8,12 +8,13 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { openDb, type Db } from "../src/db.ts";
+import { initSchema, openDb, type Db } from "../src/db.ts";
 import * as queue from "../src/queue.ts";
 
 function withDb(fn: (db: Db) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "rlh-queue-"));
   const db = openDb(join(dir, "app.db"));
+  initSchema(db);
   try {
     fn(db);
   } finally {

@@ -1,7 +1,7 @@
 // Opens the practice app's SQLite database with the pragmas every process shares.
 // WAL journal, NORMAL sync, foreign keys on and a busy timeout so concurrent
-// writers wait instead of failing. Faults later change these settings on
-// purpose (for example dropping the busy timeout to cause SQLITE_BUSY errors).
+// writers wait instead of failing. The schema is created once, by initSchema at
+// episode creation, so a restart never silently repairs a dropped index.
 
 import { DatabaseSync } from "node:sqlite";
 import { SCHEMA } from "./schema.ts";
@@ -18,8 +18,11 @@ export function openDb(file: string, options: DbOptions = {}): Db {
   db.exec("PRAGMA journal_mode = WAL");
   db.exec("PRAGMA synchronous = NORMAL");
   db.exec("PRAGMA foreign_keys = ON");
-  db.exec(SCHEMA);
   return db;
+}
+
+export function initSchema(db: Db): void {
+  db.exec(SCHEMA);
 }
 
 export function tx<T>(db: Db, fn: () => T): T {
