@@ -8,7 +8,7 @@ import { tx, type Db } from "./db.ts";
 
 export const TAX_RATE = 1.18;
 
-function mulberry32(seed: number): () => number {
+export function mulberry32(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
     state = (state + 0x6d2b79f5) >>> 0;
