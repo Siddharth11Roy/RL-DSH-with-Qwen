@@ -4,8 +4,9 @@
 
 import type { Fault } from "./types.ts";
 import { busyErrors } from "./busy-errors.ts";
+import { missingIndex } from "./missing-index.ts";
 import { walGrowth } from "./wal-growth.ts";
 
-const ALL: Fault[] = [walGrowth, busyErrors];
+const ALL: Fault[] = [walGrowth, busyErrors, missingIndex];
 
 export const FAULTS: Record<string, Fault> = Object.fromEntries(ALL.map((f) => [f.name, f]));
