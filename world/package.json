@@ -4,12 +4,12 @@
   "description": "The practice app the rlh agent learns to fix: API, job queue and worker on SQLite (WAL)",
   "type": "module",
   "scripts": {
-    "smoke": "tsx src/smoke.ts",
+    "smoke": "node --disable-warning=ExperimentalWarning src/smoke.ts",
+    "test": "node --disable-warning=ExperimentalWarning --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
 }
