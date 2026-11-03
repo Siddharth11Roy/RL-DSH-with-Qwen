@@ -1,0 +1,30 @@
+# Keeps generated, downloaded and heavy files out of git.
+# vendor/ holds third-party harnesses fetched by script, never committed.
+# runs/ holds episode folders, SQLite files and trajectory logs.
+# Model weights and adapters are large and live outside the repo.
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+node_modules/
+dist/
+*.tsbuildinfo
+
+vendor/
+runs/
+models/
+checkpoints/
+wandb/
+
+*.db
+*.db-wal
+*.db-shm
+*.safetensors
+*.gguf
+*.bin
+
+.env
+.DS_Store

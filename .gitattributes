@@ -1,0 +1,7 @@
+# Normalises line endings so Windows and WSL checkouts behave the same.
+# Shell scripts must stay LF or bash inside WSL refuses to run them.
+# PowerShell scripts keep CRLF for Windows tooling.
+
+* text=auto eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
