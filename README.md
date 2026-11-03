@@ -46,7 +46,7 @@ with small GRPO groups and short episodes so everything fits in 6 GB.
 
 ## Roadmap
 
-- [ ] Phase 0: repo, tooling, pinned DeepSeek Harness, GPU check
+- [x] Phase 0: repo, tooling, pinned DeepSeek Harness, GPU check
 - [ ] Phase 1: practice world (API, queue, worker, load generator)
 - [ ] Phase 2: fault templates and graders
 - [ ] Phase 3: the `rlh` agent loop and tools
