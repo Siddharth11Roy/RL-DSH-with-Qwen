@@ -10,10 +10,11 @@ import { poisonPayload } from "./poison-payload.ts";
 import { stuckRunning } from "./stuck-running.ts";
 import { unsafeMigration } from "./unsafe-migration.ts";
 import { walGrowth } from "./wal-growth.ts";
+import { workerCrash } from "./worker-crash.ts";
 
 const ALL: Fault[] = [
   walGrowth, busyErrors, missingIndex, orphanRows,
-  poisonPayload, stuckRunning, unsafeMigration,
+  poisonPayload, stuckRunning, unsafeMigration, workerCrash,
 ];
 
 export const FAULTS: Record<string, Fault> = Object.fromEntries(ALL.map((f) => [f.name, f]));
