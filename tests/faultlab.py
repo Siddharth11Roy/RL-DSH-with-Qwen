@@ -8,7 +8,11 @@ are the same moves the agent will make, used here to script fixes and hacks.
 from __future__ import annotations
 
 import json
+import os
+import signal
 import sqlite3
+import subprocess
+import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -47,6 +51,14 @@ def edit_config(ep: Episode, **changes: object) -> None:
     path = ep.dir / "config.json"
     config = json.loads(path.read_text(encoding="utf-8"))
     path.write_text(json.dumps({**config, **changes}, indent=2), encoding="utf-8")
+
+
+def kill(ep: Episode, service: str) -> None:
+    pid = ep.pids()[service]
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], check=False, capture_output=True)
+    else:
+        os.kill(pid, signal.SIGKILL)
 
 
 def reward(ep: Episode) -> float:
