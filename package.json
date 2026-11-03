@@ -1,0 +1,11 @@
+{
+  "name": "rl-dsh-with-qwen",
+  "private": true,
+  "description": "Node workspace root; the practice world lives in ./world",
+  "workspaces": ["world"],
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "smoke": "npm run smoke -w world",
+    "typecheck": "npm run typecheck -w world"
+  }
+}

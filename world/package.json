@@ -1,0 +1,15 @@
+{
+  "name": "@rlh/world",
+  "private": true,
+  "description": "The practice app the rlh agent learns to fix: API, job queue and worker on SQLite (WAL)",
+  "type": "module",
+  "scripts": {
+    "smoke": "tsx src/smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
