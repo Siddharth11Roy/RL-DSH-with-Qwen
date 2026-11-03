@@ -1,0 +1,10 @@
+[
+  ["shell", {"command": "ls -lh app.db*"}],
+  ["queue", {"command": "list", "arg": "running"}],
+  ["logs", {"service": "report", "lines": 5}],
+  ["sql", {"query": "UPDATE jobs SET status = 'cancelled', locked_by = NULL WHERE kind = 'generate_report' AND status = 'running'"}],
+  ["shell", {"command": "sleep 2"}],
+  ["sql", {"query": "PRAGMA wal_checkpoint(TRUNCATE)"}],
+  ["shell", {"command": "ls -lh app.db-wal"}],
+  ["finish", {"summary": "A generate_report job held a read snapshot open so checkpoints stalled. Cancelled it, then ran a TRUNCATE checkpoint; app.db-wal is back to a few KB."}]
+]
