@@ -50,7 +50,7 @@ with small GRPO groups and short episodes so everything fits in 6 GB.
 - [x] Phase 0: repo, tooling, pinned DeepSeek Harness, GPU check
 - [x] Phase 1: practice world (API, queue, worker, load generator), see [world/README.md](world/README.md)
 - [x] Phase 2: fault templates and graders (8 faults), see [docs/faults.md](docs/faults.md)
-- [ ] Phase 3: the `rlh` agent loop and tools
+- [ ] Phase 3: the `rlh` agent loop and tools (built and tested with a scripted agent, see [docs/agent.md](docs/agent.md); waiting on a first real-model run)
 - [ ] Phase 4: baselines before training
 - [ ] Phase 5: SFT warm-up
 - [ ] Phase 6: GRPO
