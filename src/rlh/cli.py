@@ -1,17 +1,21 @@
 """Command-line entry point for the `rlh` agent.
 
-Phase 0 ships `version` and `doctor`. Running episodes, baselines, training
+Phase 0 ships `version`, `doctor` and `config`. Episodes, baselines, training
 and evaluation become subcommands here as later phases land, so this file
 stays a thin layer that only parses arguments and prints results.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Annotated
+
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from rlh import __version__
+from rlh.config import ConfigError, load_config
 from rlh.doctor import run_checks
 
 app = typer.Typer(help="A terminal agent whose tool-calling policy is trained with RL.",
@@ -42,6 +46,19 @@ def doctor() -> None:
     console.print(table)
     blocking = [c for c in results if c.required and not c.ok]
     raise typer.Exit(1 if blocking else 0)
+
+
+@app.command(help="Show the settings rlh will use, after merging any override file.")
+def config(
+    override: Annotated[
+        Path | None, typer.Option("--config", "-c", help="YAML file with overrides.")
+    ] = None,
+) -> None:
+    try:
+        console.print_json(data=load_config(override))
+    except ConfigError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(1) from exc
 
 
 if __name__ == "__main__":
