@@ -18,7 +18,8 @@ The agent's brain is Qwen with a LoRA adapter. It practises on a deliberately br
 
 ```
 src/rlh/      the agent and its command line (Python)
-world/        the practice app the agent learns to fix (TypeScript)
+world/        the practice app the agent learns to fix, and its faults (TypeScript)
+src/rlh/graders/  scores an episode from outside its folder (Python)
 configs/      default settings, sized for a 6 GB GPU
 scripts/      fetch DeepSeek Harness, GPU smoke test
 tests/        pytest suite
@@ -48,7 +49,7 @@ with small GRPO groups and short episodes so everything fits in 6 GB.
 
 - [x] Phase 0: repo, tooling, pinned DeepSeek Harness, GPU check
 - [x] Phase 1: practice world (API, queue, worker, load generator), see [world/README.md](world/README.md)
-- [ ] Phase 2: fault templates and graders
+- [x] Phase 2: fault templates and graders (8 faults), see [docs/faults.md](docs/faults.md)
 - [ ] Phase 3: the `rlh` agent loop and tools
 - [ ] Phase 4: baselines before training
 - [ ] Phase 5: SFT warm-up
