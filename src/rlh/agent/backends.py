@@ -13,6 +13,10 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 
+class BackendError(RuntimeError):
+    pass
+
+
 @dataclass
 class ToolCall:
     id: str
@@ -55,8 +59,13 @@ class OpenAIBackend:
                         "extra_body": extra_body or {}}
 
     def complete(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> AssistantTurn:
-        response = self.client.chat.completions.create(
-            model=self.name, messages=messages, tools=tools, tool_choice="auto", **self.options)
+        from openai import OpenAIError
+
+        try:
+            response = self.client.chat.completions.create(
+                model=self.name, messages=messages, tools=tools, tool_choice="auto", **self.options)
+        except OpenAIError as exc:
+            raise BackendError(str(exc)) from exc
         message = response.choices[0].message
         calls = [ToolCall(c.id, c.function.name, c.function.arguments or "{}")
                  for c in (message.tool_calls or [])]
