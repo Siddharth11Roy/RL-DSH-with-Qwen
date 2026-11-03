@@ -1,6 +1,6 @@
 """Command-line entry point for the `rlh` agent.
 
-Ships `version`, `doctor`, `config`, `grade` and the `world` group for
+Ships `version`, `doctor`, `config`, `run`, `grade` and the `world` group for
 episodes and faults. Baselines, training and evaluation join as later phases
 land, so this file stays a thin layer that only parses arguments and prints.
 """
@@ -18,11 +18,13 @@ from rlh import __version__
 from rlh.config import ConfigError, load_config
 from rlh.doctor import run_checks
 from rlh.graders import grade as grade_episode
+from rlh.run_cli import run
 from rlh.world import episode_dir, world_app
 
 app = typer.Typer(help="A terminal agent whose tool-calling policy is trained with RL.",
                   no_args_is_help=True, add_completion=False)
 app.add_typer(world_app, name="world")
+app.command(help="Run one incident: inject a fault, let the agent fix it, grade it.")(run)
 console = Console()
 
 
