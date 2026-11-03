@@ -1,8 +1,8 @@
 // HTTP API of the practice app, the front door for the load generator and agent.
-// POST /orders stores an order and enqueues its process_order job in one
-// transaction; GET /health and GET /stats report liveness, WAL size and queue
-// counts. Run as `node src/api.ts <episode-dir>`; it picks a free port and
-// writes it to <episode-dir>/api.port.
+// POST /orders stores an order and enqueues its job in one transaction;
+// GET /orders/:id returns an order with its results; GET /health and GET /stats
+// report liveness, WAL size and queue counts. Run as `node src/api.ts <dir>`;
+// it picks a free port and writes it to <dir>/api.port.
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, statSync, writeFileSync } from "node:fs";
@@ -22,6 +22,8 @@ const db = openDb(dbFile, { busyTimeoutMs: readConfig(dir).busy_timeout_ms });
 const insertOrder = db.prepare(
   "INSERT INTO orders (customer, amount_cents) VALUES (?, ?) RETURNING id",
 );
+const findOrder = db.prepare("SELECT * FROM orders WHERE id = ?");
+const findResults = db.prepare("SELECT * FROM results WHERE order_id = ?");
 
 function walBytes(): number {
   const wal = `${dbFile}-wal`;
@@ -56,6 +58,12 @@ const server = createServer(async (req, res) => {
         return send(res, 400, { error: "need customer (string) and amount_cents (int > 0)" });
       }
       return send(res, 201, { order_id: placeOrder(customer, amount as number) });
+    }
+    const lookup = req.method === "GET" ? /^\/orders\/(\d+)$/.exec(req.url ?? "") : null;
+    if (lookup) {
+      const order = findOrder.get(Number(lookup[1]));
+      if (!order) return send(res, 404, { error: "order not found" });
+      return send(res, 200, { order, results: findResults.all(Number(lookup[1])) });
     }
     if (req.method === "GET" && req.url === "/health") {
       return send(res, 200, { ok: true, wal_bytes: walBytes() });
