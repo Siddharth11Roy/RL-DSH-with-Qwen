@@ -1,8 +1,8 @@
 """Command-line entry point for the `rlh` agent.
 
-Phase 0 ships `version`, `doctor` and `config`. Episodes, baselines, training
-and evaluation become subcommands here as later phases land, so this file
-stays a thin layer that only parses arguments and prints results.
+Ships `version`, `doctor`, `config` and the `world` group for episodes.
+Baselines, training and evaluation become subcommands here as later phases
+land, so this file stays a thin layer that only parses arguments and prints.
 """
 
 from __future__ import annotations
@@ -17,9 +17,11 @@ from rich.table import Table
 from rlh import __version__
 from rlh.config import ConfigError, load_config
 from rlh.doctor import run_checks
+from rlh.world import world_app
 
 app = typer.Typer(help="A terminal agent whose tool-calling policy is trained with RL.",
                   no_args_is_help=True, add_completion=False)
+app.add_typer(world_app, name="world")
 console = Console()
 
 
