@@ -23,8 +23,8 @@ from rlh.world import inject_fault, run_episode, run_node
 
 @contextmanager
 def faulted_episode(tmp: Path, fault: str, seed: int = 1, rows: int = 800,
-                    rate: int = 15) -> Iterator[Episode]:
-    directory = tmp / "ep"
+                    rate: int = 15, name: str = "ep") -> Iterator[Episode]:
+    directory = tmp / name
     run_episode("create", directory, "--rows", str(rows), "--seed", str(seed))
     run_episode("start", directory, "--rate", str(rate))
     try:

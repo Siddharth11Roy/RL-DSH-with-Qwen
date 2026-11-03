@@ -7,11 +7,12 @@ import { busyErrors } from "./busy-errors.ts";
 import { missingIndex } from "./missing-index.ts";
 import { orphanRows } from "./orphan-rows.ts";
 import { poisonPayload } from "./poison-payload.ts";
+import { stuckRunning } from "./stuck-running.ts";
 import { walGrowth } from "./wal-growth.ts";
 
 const ALL: Fault[] = [
   walGrowth, busyErrors, missingIndex, orphanRows,
-  poisonPayload,
+  poisonPayload, stuckRunning,
 ];
 
 export const FAULTS: Record<string, Fault> = Object.fromEntries(ALL.map((f) => [f.name, f]));
