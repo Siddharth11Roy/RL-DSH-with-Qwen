@@ -8,18 +8,14 @@ import { join, resolve } from "node:path";
 import { initSchema, openDb } from "./db.ts";
 import { DEFAULT_CONFIG, writeConfig } from "./config.ts";
 import { checksum, seed } from "./seed.ts";
-import { fileExists, isAlive, killTree, startProcess, waitFor } from "./proc.ts";
+import { fileExists, isAlive, killTree } from "./proc.ts";
+import { readPids, startLoad, startService, type Pids } from "./services.ts";
 
 export interface CreateOptions { rows?: number; seed?: number }
 export interface StartOptions { rate?: number; workers?: number }
-export type Pids = Record<string, number>;
+export { readPids, type Pids };
 
 export const secretDir = (dir: string): string => `${resolve(dir)}.secret`;
-const pidsFile = (dir: string): string => join(dir, "pids.json");
-
-export function readPids(dir: string): Pids {
-  return fileExists(pidsFile(dir)) ? (JSON.parse(readFileSync(pidsFile(dir), "utf8")) as Pids) : {};
-}
 
 export function createEpisode(dir: string, options: CreateOptions = {}): string {
   const rows = options.rows ?? 2000;
@@ -42,25 +38,22 @@ export function createEpisode(dir: string, options: CreateOptions = {}): string 
 
 export async function startEpisode(dir: string, options: StartOptions = {}): Promise<Pids> {
   if (Object.values(readPids(dir)).some(isAlive)) throw new Error(`episode already running: ${dir}`);
-  rmSync(join(dir, "api.port"), { force: true });
-  const pids: Pids = { api: startProcess(dir, "api", "api.ts") };
-  for (let i = 1; i <= (options.workers ?? 1); i++) {
-    pids[`worker${i}`] = startProcess(dir, `worker${i}`, "worker.ts", [`worker-${i}`]);
-  }
-  writeFileSync(pidsFile(dir), JSON.stringify(pids));
-  if (!(await waitFor(() => fileExists(join(dir, "api.port")), 10_000))) {
+  rmSync(join(dir, "pids.json"), { force: true });
+  try {
+    for (let i = 1; i <= (options.workers ?? 1); i++) await startService(dir, `worker${i}`);
+    await startService(dir, "api");
+  } catch (err) {
     stopEpisode(dir);
-    throw new Error(`api did not start; see ${join(dir, "logs", "api.log")}`);
+    throw err;
   }
-  pids.load = startProcess(dir, "load", "load.ts", [String(options.rate ?? 20)]);
-  writeFileSync(pidsFile(dir), JSON.stringify(pids));
-  return pids;
+  startLoad(dir, options.rate ?? 20);
+  return readPids(dir);
 }
 
 export function stopEpisode(dir: string): number {
   const pids = Object.values(readPids(dir));
   for (const pid of pids) killTree(pid);
-  rmSync(pidsFile(dir), { force: true });
+  rmSync(join(dir, "pids.json"), { force: true });
   return pids.length;
 }
 
