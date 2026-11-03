@@ -1,0 +1,42 @@
+# Python project for the rlh agent, managed with uv.
+# Runtime deps stay small; training deps (torch, transformers, ...) live in the
+# "train" group so the agent itself installs fast on any machine.
+# `rlh` is exposed as a console script pointing at rlh.cli:app.
+
+[project]
+name = "rlh"
+version = "0.0.1"
+description = "A terminal coding agent whose tool-calling policy is trained with RL"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Siddharth Roy" }]
+dependencies = [
+    "typer>=0.12",
+    "rich>=13",
+    "pyyaml>=6",
+]
+
+[project.scripts]
+rlh = "rlh.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.5"]
+train = ["torch>=2.4", "transformers>=4.51", "accelerate>=1.0", "bitsandbytes>=0.45"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rlh"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
