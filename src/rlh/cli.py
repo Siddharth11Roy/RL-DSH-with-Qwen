@@ -1,7 +1,7 @@
 """Command-line entry point for the `rlh` agent.
 
-Ships `version`, `doctor`, `config` and the `world` group for episodes.
-Baselines, training and evaluation become subcommands here as later phases
+Ships `version`, `doctor`, `config`, `grade` and the `world` group for
+episodes and faults. Baselines, training and evaluation join as later phases
 land, so this file stays a thin layer that only parses arguments and prints.
 """
 
@@ -17,7 +17,8 @@ from rich.table import Table
 from rlh import __version__
 from rlh.config import ConfigError, load_config
 from rlh.doctor import run_checks
-from rlh.world import world_app
+from rlh.graders import grade as grade_episode
+from rlh.world import episode_dir, world_app
 
 app = typer.Typer(help="A terminal agent whose tool-calling policy is trained with RL.",
                   no_args_is_help=True, add_completion=False)
@@ -48,6 +49,18 @@ def doctor() -> None:
     console.print(table)
     blocking = [c for c in results if c.required and not c.ok]
     raise typer.Exit(1 if blocking else 0)
+
+
+@app.command(help="Score an episode with the grader for its injected fault.")
+def grade(name: str) -> None:
+    result = grade_episode(episode_dir(name))
+    table = Table(title=f"{result.fault}: reward {result.reward:+.2f}", show_header=True)
+    for column in ("Check", "Kind", "Result", "Detail"):
+        table.add_column(column)
+    for check in result.checks:
+        mark = "[green]pass[/green]" if check.passed else "[red]fail[/red]"
+        table.add_row(check.name, check.kind, mark, check.detail)
+    console.print(table)
 
 
 @app.command(help="Show the settings rlh will use, after merging any override file.")
