@@ -1,0 +1,9 @@
+# Pins for third-party harnesses we download but never copy into this repo.
+# scripts/fetch_dsh.py clones each into the git-ignored vendor/ folder at the
+# exact commit below, so every machine tests against the same upstream code.
+# Run the script with --update-pin to move a pin to the latest upstream commit.
+
+[deepseek-harness]
+repo = "https://github.com/deepseek-ai/deepseek-harness.git"
+ref = "8bd073392eef6f54e921a093b95076248eb08cbb"
+npm = "@deepseek-ai/dsh@0.2.1-rc.5"
